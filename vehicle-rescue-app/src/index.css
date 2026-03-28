@@ -1,0 +1,293 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 主內容區域 - 並排布局 */
+.map-refresh-wrapper {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  padding: 0 12px;
+  overflow: hidden;
+}
+
+/* 地圖容器 */
+.map-container {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  min-height: 0;
+}
+
+.map-container .loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.loading-text .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 頂部 */
+.header {
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status {
+  font-size: 14px;
+}
+
+.online-badge {
+  display: inline-block;
+  color: #10b981;
+  font-size: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 地圖區域 */
+.map-area {
+  background: white;
+  margin: 12px;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.map-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #667eea;
+}
+
+.map-info p {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.map-info small {
+  color: #999;
+  font-size: 12px;
+}
+
+/* 維修廠列表 */
+.repairs-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.repairs-container h2 {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.repairs-list {
+  display: grid;
+  gap: 12px;
+}
+
+.repair-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.repair-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.repair-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.repair-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.repair-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-row svg {
+  color: #667eea;
+}
+
+.skills-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.skill-tag {
+  background: #f0f0f0;
+  color: #667eea;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 緊急按鈕 */
+.emergency-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.emergency-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.emergency-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emergency-btn.active {
+  animation: pulse-btn 0.6s ease-in-out;
+}
+
+@keyframes pulse-btn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+}
+
+/* 底部 */
+.footer {
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .repair-card {
+    padding: 12px;
+  }
+
+  .emergency-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
