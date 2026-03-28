@@ -1,0 +1,127 @@
+/* 通知容器 */
+.notifications-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+/* 單個通知 */
+.notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  min-width: 300px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notification .icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.notification-content p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.4;
+}
+
+/* 不同類型的通知 */
+.notification-request_sent {
+  border-left-color: #667eea;
+}
+
+.notification-request_sent .icon {
+  color: #667eea;
+}
+
+.notification-rescue_accepted {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+}
+
+.notification-rescue_accepted .icon {
+  color: #10b981;
+}
+
+.notification-repair_on_way {
+  border-left-color: #f59e0b;
+  background: #fffbf0;
+}
+
+.notification-repair_on_way .icon {
+  color: #f59e0b;
+}
+
+.notification-repair_arrived {
+  border-left-color: #8b5cf6;
+  background: #faf5ff;
+}
+
+.notification-repair_arrived .icon {
+  color: #8b5cf6;
+}
+
+/* 關閉按鈕 */
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.notification-close:hover {
+  color: #333;
+}
+
+/* 跳出動畫 */
+@media (max-width: 480px) {
+  .notifications-container {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    max-width: none;
+  }
+
+  .notification {
+    min-width: auto;
+  }
+}

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 調試測試工具</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .console {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .console-line {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        .info { color: #00ccff; }
+        .success { color: #00ff00; }
+        .error { color: #ff6b6b; }
+        .warn { color: #ffaa33; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .separator {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: #ddd;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 WebSocket 調試測試工具</h1>
+            <p>用於診斷救援平台的 WebSocket 消息路由問題</p>
+        </div>
+
+        <div class="content">
+            <!-- 廠商端 -->
+            <div class="section">
+                <h2>🔧 廠商端（連接器）</h2>
+                
+                <div class="input-group">
+                    <label>廠商 ID</label>
+                    <input type="text" id="repairId" value="1" placeholder="輸入廠商 ID">
+                </div>
+                
+                <div class="input-group">
+                    <label>廠商名稱</label>
+                    <input type="text" id="repairName" value="24小時快速維修廠" placeholder="輸入廠商名稱">
+                </div>
+
+                <button onclick="connectRepair()">連接為廠商</button>
+                <button onclick="disconnectRepair()">斷開連接</button>
+
+                <div id="repairStatus" class="status disconnected">● 未連接</div>
+
+                <h3>廠商收到的消息</h3>
+                <div id="repairConsole" class="console"></div>
+            </div>
+
+            <!-- 用戶端 -->
+            <div class="section">
+                <h2>👤 用戶端（發送者）</h2>
+                
+                <div class="input-group">
+                    <label>目標廠商 ID</label>
+                    <input type="text" id="targetRepairId" value="1" placeholder="輸入要請求的廠商 ID">
+                </div>
+
+                <div class="input-group">
+                    <label>用戶 GPS 緯度</label>
+                    <input type="text" id="userLat" value="25.0330" placeholder="緯度">
+                </div>
+
+                <div class="input-group">
+                    <label>用戶 GPS 經度</label>
+                    <input type="text" id="userLng" value="121.5654" placeholder="經度">
+                </div>
+
+                <button onclick="connectUser()">連接為用戶</button>
+                <button onclick="sendRescueRequest()">發送救援請求</button>
+                <button onclick="disconnectUser()">斷開連接</button>
+
+                <div id="userStatus" class="status disconnected">● 未連接</div>
+
+                <h3>用戶收到的消息</h3>
+                <div id="userConsole" class="console"></div>
+            </div>
+
+            <!-- 服務器日誌 -->
+            <div class="separator"></div>
+            
+            <div class="section">
+                <h2>📊 診斷信息</h2>
+                <button onclick="clearAllConsoles()">清除所有日誌</button>
+                <p><strong>測試步驟：</strong></p>
+                <ol>
+                    <li>點擊「連接為廠商」以啟動廠商連接</li>
+                    <li>檢查廠商控制台是否顯示「已連接」日誌</li>
+                    <li>點擊「連接為用戶」以啟動用戶連接</li>
+                    <li>點擊「發送救援請求」即時發送救援請求</li>
+                    <li>檢查廠商控制台是否收到救援請求消息</li>
+                    <li>打開瀏覽器開發工具（F12）查看後端伺服器日誌</li>
+                </ol>
+                <p><strong>故障排查：</strong></p>
+                <ul>
+                    <li>如果廠商未收到消息，檢查廠商 ID 是否與發送者的目標 ID 相同</li>
+                    <li>檢查 WebSocket 連接狀態是否為「已連接」</li>
+                    <li>查看瀏覽器控制台 (F12)，查看是否有連接錯誤</li>
+                    <li>檢查後端伺服器日誌是否顯示客戶端註冊和廣播嘗試</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let repairWs = null;
+        let userWs = null;
+
+        const repairConsole = document.getElementById('repairConsole');
+        const userConsole = document.getElementById('userConsole');
+        const repairStatus = document.getElementById('repairStatus');
+        const userStatus = document.getElementById('userStatus');
+
+        function log(consoleElement, message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            line.textContent = `[${timestamp}] ${message}`;
+            consoleElement.appendChild(line);
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            
+            // 同時將日誌輸出到瀏覽器控制台
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function connectRepair() {
+            const repairId = document.getElementById('repairId').value;
+            const repairName = document.getElementById('repairName').value;
+
+            if (!repairId || !repairName) {
+                alert('請輸入廠商 ID 和名稱');
+                return;
+            }
+
+            log(repairConsole, `正在連接為廠商...`, 'info');
+            log(repairConsole, `廠商 ID: ${repairId}`, 'info');
+            log(repairConsole, `廠商名稱: ${repairName}`, 'info');
+
+            repairWs = new WebSocket('ws://localhost:3001');
+
+            repairWs.onopen = () => {
+                log(repairConsole, `✅ WebSocket 已連接`, 'success');
+                log(repairConsole, `即將發送註冊消息...`, 'info');
+
+                repairWs.send(JSON.stringify({
+                    type: 'register',
+                    role: 'repair',
+                    repairId: repairId,
+                    repairName: repairName,
+                }));
+
+                log(repairConsole, `✅ 註冊消息已發送`, 'success');
+                repairStatus.textContent = `● 已連接 (ID: ${repairId})`;
+                repairStatus.className = 'status connected';
+            };
+
+            repairWs.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    log(repairConsole, `📨 收到消息: ${JSON.stringify(data)}`, 'success');
+
+                    if (data.type === 'rescue_request') {
+                        log(repairConsole, `🚨 [重要] 收到救援請求!`, 'success');
+                        log(repairConsole, `   請求 ID: ${data.request.id}`, 'success');
+                        log(repairConsole, `   用戶 ID: ${data.request.userId}`, 'success');
+                        log(repairConsole, `   位置: ${data.request.lat}, ${data.request.lng}`, 'success');
+                    }
+                } catch (error) {
+                    log(repairConsole, `❌ 消息解析錯誤: ${error.message}`, 'error');
+                }
+            };
+
+            repairWs.onerror = (error) => {
+                log(repairConsole, `❌ WebSocket 錯誤: ${error}`, 'error');
+            };
+
+            repairWs.onclose = () => {
+                log(repairConsole, `💔 連接已關閉`, 'warn');
+                repairStatus.textContent = `● 未連接`;
+                repairStatus.className = 'status disconnected';
+            };
+        }
+
+        function disconnectRepair() {
+            if (repairWs) {
+                repairWs.close();
+                log(repairConsole, `手動斷開連接`, 'warn');
+            }
+        }
+
+        function connectUser() {
+            log(userConsole, `正在連接為用戶...`, 'info');
+
+            userWs = new WebSocket('ws://localhost:3001');
+
+            userWs.onopen = () => {
+                log(userConsole, `✅ WebSocket 已連接`, 'success');
+                log(userConsole, `即將發送用戶註冊...`, 'info');
+
+                userWs.send(JSON.stringify({
+                    type: 'register',
+                    role: 'user',
+                }));
+
+                log(userConsole, `✅ 用戶註冊已發送`, 'success');
+                userStatus.textContent = `● 已連接`;
+                userStatus.className = 'status connected';
+            };
+
+            userWs.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    log(userConsole, `📨 收到消息: ${JSON.stringify(data)}`, 'success');
+
+                    if (data.type === 'request_sent') {
+                        log(userConsole, `✅ [重要] 救援請求已發送!`, 'success');
+                        log(userConsole, `   請求 ID: ${data.requestId}`, 'success');
+                    } else if (data.type === 'rescue_accepted') {
+                        log(userConsole, `✅ [重要] 救援已被接受!`, 'success');
+                        log(userConsole, `   廠商: ${data.repairName}`, 'success');
+                    }
+                } catch (error) {
+                    log(userConsole, `❌ 消息解析錯誤: ${error.message}`, 'error');
+                }
+            };
+
+            userWs.onerror = (error) => {
+                log(userConsole, `❌ WebSocket 錯誤: ${error}`, 'error');
+            };
+
+            userWs.onclose = () => {
+                log(userConsole, `💔 連接已關閉`, 'warn');
+                userStatus.textContent = `● 未連接`;
+                userStatus.className = 'status disconnected';
+            };
+        }
+
+        function disconnectUser() {
+            if (userWs) {
+                userWs.close();
+                log(userConsole, `手動斷開連接`, 'warn');
+            }
+        }
+
+        function sendRescueRequest() {
+            if (!userWs || userWs.readyState !== WebSocket.OPEN) {
+                alert('用戶未連接！請先點擊「連接為用戶」');
+                return;
+            }
+
+            const targetRepairId = document.getElementById('targetRepairId').value;
+            const userLat = parseFloat(document.getElementById('userLat').value);
+            const userLng = parseFloat(document.getElementById('userLng').value);
+
+            if (!targetRepairId) {
+                alert('請輸入目標廠商 ID');
+                return;
+            }
+
+            log(userConsole, `🚀 發送救援請求...`, 'info');
+            log(userConsole, `   目標廠商 ID: ${targetRepairId}`, 'info');
+            log(userConsole, `   用戶位置: ${userLat}, ${userLng}`, 'info');
+
+            userWs.send(JSON.stringify({
+                type: 'request_rescue',
+                userId: 'user_' + Math.random().toString(36).substring(7),
+                repairId: targetRepairId,
+                lat: userLat,
+                lng: userLng,
+            }));
+
+            log(userConsole, `✅ 救援請求消息已發送`, 'success');
+        }
+
+        function clearAllConsoles() {
+            repairConsole.innerHTML = '';
+            userConsole.innerHTML = '';
+            log(repairConsole, `控制台已清除`, 'info');
+            log(userConsole, `控制台已清除`, 'info');
+        }
+
+        // 頁面加載時的初始化信息
+        window.addEventListener('load', () => {
+            log(repairConsole, `廠商端測試工具已準備就緒`, 'info');
+            log(userConsole, `用戶端測試工具已準備就緒`, 'info');
+        });
+    </script>
+</body>
+</html>
